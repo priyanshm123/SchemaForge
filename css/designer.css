@@ -1,0 +1,29 @@
+.schema-canvas {
+    position: relative;
+
+    min-height: 650px;
+
+    margin-top: 30px;
+
+    overflow: hidden;
+}
+
+.canvas-placeholder {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    text-align: center;
+
+    color: var(--text-secondary);
+}
+
+.canvas-placeholder h2 {
+    color: var(--text-primary);
+
+    margin-bottom: 8px;
+}
+

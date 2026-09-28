@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>SchemaForge</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+
+<body>
+
+    <main class="app-container">
+
+        <header class="topbar glass-panel">
+
+            <div>
+                <h1>SchemaForge</h1>
+
+                <p>
+                    Offline Visual Database Designer
+                </p>
+            </div>
+
+            <button
+                id="create-project-btn"
+                class="primary-button"
+            >
+                + New Project
+            </button>
+
+        </header>
+
+
+        <section class="dashboard">
+
+            <div class="section-heading">
+
+                <h2>Your Projects</h2>
+
+                <p>
+                    Create and manage your local database schemas.
+                </p>
+
+            </div>
+
+
+            <div
+                id="project-list"
+                class="project-list"
+            >
+
+                <div class="empty-state glass-panel">
+
+                    <div class="empty-icon">
+                        +
+                    </div>
+
+                    <h3>No projects yet</h3>
+
+                    <p>
+                        Create your first database schema to get started.
+                    </p>
+
+                    <button
+                        id="empty-create-project-btn"
+                        class="primary-button"
+                    >
+                        Create Project
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="js/db/database.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+
+</html>
