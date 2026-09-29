@@ -1,0 +1,51 @@
+.project-card {
+    padding: 22px;
+
+    margin-bottom: 16px;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-2px);
+
+    background: var(--surface-hover);
+}
+
+.project-card h3 {
+    font-size: 20px;
+}
+
+.project-card p {
+    margin-top: 8px;
+
+    color: var(--text-secondary);
+
+    line-height: 1.5;
+}
+
+.project-actions {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 18px;
+}
+
+.delete-button {
+    padding: 11px 18px;
+
+    border-radius: 10px;
+
+    color: var(--text-primary);
+
+    background: rgba(255, 255, 255, 0.08);
+
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background: rgba(239, 68, 68, 0.2);
+}

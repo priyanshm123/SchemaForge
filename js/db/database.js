@@ -3,7 +3,7 @@ const DB_VERSION = 1;
 
 let dbInstance = null;
 
-function openDatabase() {
+export function openDatabase() {
 
     return new Promise((resolve, reject) => {
 
@@ -125,4 +125,8 @@ function openDatabase() {
             reject(request.error);
         };
     });
+}
+
+export function getDatabase() {
+    return dbInstance;
 }

@@ -1,64 +1,49 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>SchemaForge — Designer</title>
 
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/designer.css">
-</head>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/designer.css" />
 
-<body>
+    <script type="module" src="js/app.js"></script>
+  </head>
+
+  <body>
 
     <main class="app-container">
 
         <header class="topbar glass-panel">
 
             <div>
-                <h1>Schema Designer</h1>
 
-                <p>
-                    Visual database schema editor
-                </p>
+                <h1 id="project-title">Schema Designer</h1>
+
+                <p id="project-description">Loading project...</p>
+
             </div>
 
-            <a
-                href="index.html"
-                class="primary-button"
-            >
-                Dashboard
-            </a>
+            <a href="index.html" class="primary-button"> Dashboard </a>
 
         </header>
 
-
-        <section
-            id="schema-canvas"
-            class="schema-canvas glass-panel"
-        >
+        <section id="schema-canvas" class="schema-canvas glass-panel">
 
             <div class="canvas-placeholder">
 
                 <h2>Schema Canvas</h2>
 
-                <p>
-                    Tables and relationships will appear here.
-                </p>
+                <p>Tables and relationships will appear here.</p>
 
             </div>
-
         </section>
 
     </main>
 
-</body>
-
+  </body>
 </html>
