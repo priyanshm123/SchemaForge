@@ -128,5 +128,11 @@ export function openDatabase() {
 }
 
 export function getDatabase() {
+    if (!dbInstance) {
+        throw new Error(
+            "IndexedDB is not initialized. Call openDatabase() before using the database."
+        );
+    }
+
     return dbInstance;
 }
