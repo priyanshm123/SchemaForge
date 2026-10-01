@@ -1,0 +1,136 @@
+.schema-canvas {
+    position: relative;
+    min-height: 650px;
+    margin-top: 30px;
+    overflow: visible;
+}
+
+.canvas-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.canvas-placeholder h2 {
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.schema-table {
+    position: absolute;
+    width: 220px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(20, 25, 40, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.schema-table-header {
+    padding: 12px;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.schema-table-body {
+    padding: 12px;
+    font-size: 14px;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.edit-table-button,
+.delete-table-button {
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 5px;
+    color: #94a3b8;
+}
+
+.edit-table-button:hover {
+    color: #ffffff;
+}
+
+.delete-table-button:hover {
+    color: #f87171;
+}
+
+.schema-column {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.column-info {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.column-name {
+    color: #e2e8f0;
+    font-size: 13px;
+}
+
+.column-type {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.column-actions {
+    display: flex;
+    gap: 3px;
+    margin-left: 8px;
+}
+
+.edit-column-button,
+.delete-column-button {
+    border: none;
+    background: transparent;
+    padding: 2px 4px;
+    cursor: pointer;
+    color: #94a3b8;
+}
+
+.edit-column-button:hover {
+    color: #ffffff;
+}
+
+.delete-column-button:hover {
+    color: #f87171;
+}
+
+.no-columns {
+    margin: 0;
+    padding: 12px;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.add-column-button {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: transparent;
+    color: #94a3b8;
+    text-align: left;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.add-column-button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}

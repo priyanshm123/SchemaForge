@@ -52,21 +52,318 @@
 
 .add-table-button {
     padding: 10px 16px;
+
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 8px;
+
     background: rgba(255, 255, 255, 0.08);
+
     color: #ffffff;
+
     font-size: 14px;
     font-weight: 600;
+
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
 }
 
 .add-table-button:hover {
     background: rgba(255, 255, 255, 0.14);
+
     border-color: rgba(255, 255, 255, 0.3);
 }
 
 .add-table-button:active {
+    transform: translateY(1px);
+}
+
+
+/* =========================
+   Modal / Side Panel
+   ========================= */
+
+.modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1000;
+
+    pointer-events: none;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content::before {
+    content: "";
+
+    position: absolute;
+
+    left: -6px;
+    top: 24px;
+
+    width: 11px;
+    height: 11px;
+
+    background: rgba(20, 25, 40, 0.97);
+
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+
+    transform: rotate(45deg);
+}
+
+.modal-content {
+    position: fixed;
+
+    width: 280px;
+    max-width: calc(100vw - 24px);
+
+    box-sizing: border-box;
+
+    padding: 16px;
+
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+
+    background: rgba(20, 25, 40, 0.62);
+
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.4);
+
+    pointer-events: auto;
+
+    z-index: 10001;
+}
+
+.modal-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 18px;
+}
+
+.modal-header h2 {
+    margin: 0;
+
+    color: var(--text-primary);
+
+    font-size: 18px;
+    font-weight: 650;
+}
+
+.modal-close-button {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: var(--text-secondary);
+
+    font-size: 24px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.modal-close-button:hover {
+    background: rgba(255, 255, 255, 0.07);
+
+    color: #ffffff;
+}
+
+
+/* =========================
+   Form
+   ========================= */
+
+.form-group {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+    margin-bottom: 14px;
+}
+
+.form-group label {
+    color: var(--text-primary);
+
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 8px 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.07);
+
+    color: #f8fafc;
+
+    font-size: 13px;
+
+    outline: none;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    background: rgba(255, 255, 255, 0.1);
+
+    border-color: rgba(139, 92, 246, 0.8);
+}
+
+.form-group select option {
+    background: #141927;
+
+    color: #ffffff;
+}
+
+
+/* =========================
+   Checkboxes
+   ========================= */
+
+.checkbox-group {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.checkbox-group label {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    color: var(--text-primary);
+
+    cursor: pointer;
+}
+
+.checkbox-group input {
+    width: 16px;
+    height: 16px;
+
+    accent-color: #8b5cf6;
+}
+
+
+/* =========================
+   Modal Actions
+   ========================= */
+
+.modal-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 32px;
+}
+
+
+/* =========================
+   Secondary Button
+   ========================= */
+
+.secondary-button {
+    padding: 8px 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.06);
+
+    color: #e2e8f0;
+
+    font-size: 13px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.secondary-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.secondary-button:active {
+    transform: translateY(1px);
+}
+
+.save-button {
+    padding: 8px 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.06);
+
+    color: #e2e8f0;
+
+    font-size: 13px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.save-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.save-button:active {
     transform: translateY(1px);
 }

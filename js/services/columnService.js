@@ -59,7 +59,7 @@ export function updateColumn(column) {
 
         const store = transaction.objectStore("columns");
 
-        const request = store.add(column);
+        const request = store.put(column);
 
         request.onsuccess = () => {
             resolve(column);
