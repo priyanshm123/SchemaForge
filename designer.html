@@ -10,170 +10,143 @@
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/components.css" />
     <link rel="stylesheet" href="css/designer.css" />
-    <link rel="stylesheet" href="css/canvas.css">
+    <link rel="stylesheet" href="css/canvas.css" />
 
     <script type="module" src="js/app.js"></script>
   </head>
 
   <body>
-
     <main class="app-container">
+      <header class="topbar glass-panel">
+        <div>
+          <h1 id="project-title">Schema Designer</h1>
 
-        <header class="topbar glass-panel">
-
-            <div>
-
-                <h1 id="project-title">Schema Designer</h1>
-
-                <p id="project-description">Loading project...</p>
-
-            </div>
-
-            <button id="add-table-button" class="add-table-button">
-                + Add Table
-            </button>
-
-            <a href="index.html" class="primary-button"> Dashboard </a>
-
-        </header>
-
-        <section id="schema-canvas" class="schema-canvas glass-panel">
-
-            <div class="canvas-placeholder">
-
-                <h2>Schema Canvas</h2>
-
-                <p>Tables and relationships will appear here.</p>
-
-            </div>
-        </section>
-
-        <div id="column-modal" class="modal hidden">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <h2 id="column-modal-title">
-                    Add Column
-                </h2>
-
-                <button
-                    id="close-column-modal"
-                    class="modal-close-button"
-                    type="button"
-                >
-                    ×
-                </button>
-
-            </div>
-
-            <form id="column-form">
-
-                <div class="form-group">
-
-                    <label for="column-name">
-                        Column Name
-                    </label>
-
-                    <input
-                        id="column-name"
-                        type="text"
-                        required
-                    />
-
-                </div>
-
-                <div class="form-group">
-
-                    <label for="column-data-type">
-                        Data Type
-                    </label>
-
-                    <select id="column-data-type">
-
-                        <option value="INTEGER">INTEGER</option>
-                        <option value="VARCHAR">VARCHAR</option>
-                        <option value="TEXT">TEXT</option>
-                        <option value="BOOLEAN">BOOLEAN</option>
-                        <option value="DATE">DATE</option>
-                        <option value="DATETIME">DATETIME</option>
-                        <option value="DECIMAL">DECIMAL</option>
-
-                    </select>
-
-                </div>
-
-                <div class="form-group checkbox-group">
-
-                    <label>
-                        <input
-                            id="column-primary-key"
-                            type="checkbox"
-                        />
-
-                        Primary Key
-                    </label>
-
-                    <label>
-                        <input
-                            id="column-unique"
-                            type="checkbox"
-                        />
-
-                        Unique
-                    </label>
-
-                    <label>
-                        <input
-                            id="column-nullable"
-                            type="checkbox"
-                            checked
-                        />
-
-                        Nullable
-                    </label>
-
-                </div>
-
-                <div class="form-group">
-
-                    <label for="column-default">
-                        Default Value
-                    </label>
-
-                    <input
-                        id="column-default"
-                        type="text"
-                    />
-
-                </div>
-
-                <div class="modal-actions">
-
-                    <button
-                        type="button"
-                        id="cancel-column-modal"
-                        class="secondary-button"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="save-button"
-                    >
-                        Save Column
-                    </button>
-
-                </div>
-
-            </form>
-
+          <p id="project-description">Loading project...</p>
         </div>
 
-    </div>
-    </main>
+        <button id="add-table-button" class="add-table-button">
+          + Add Table
+        </button>
 
+        <a href="index.html" class="primary-button"> Dashboard </a>
+      </header>
+
+      <section id="schema-canvas" class="schema-canvas glass-panel">
+        <div class="canvas-placeholder">
+          <h2>Schema Canvas</h2>
+
+          <p>Tables and relationships will appear here.</p>
+        </div>
+      </section>
+
+      <div id="column-modal" class="modal hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="column-modal-title">Add Column</h2>
+
+            <button
+              id="close-column-modal"
+              class="modal-close-button"
+              type="button"
+            >
+              ×
+            </button>
+          </div>
+
+          <form id="column-form">
+            <div class="form-group">
+              <label for="column-name">Column Name</label>
+              <input id="column-name" type="text" required />
+            </div>
+
+            <div class="form-group">
+              <label for="column-data-type">Data Type</label>
+
+              <select id="column-data-type">
+                <option value="INTEGER">INTEGER</option>
+                <option value="VARCHAR">VARCHAR</option>
+                <option value="TEXT">TEXT</option>
+                <option value="BOOLEAN">BOOLEAN</option>
+                <option value="DATE">DATE</option>
+                <option value="DATETIME">DATETIME</option>
+                <option value="DECIMAL">DECIMAL</option>
+              </select>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label>
+                <input id="column-primary-key" type="checkbox" />
+                Primary Key
+              </label>
+
+              <label>
+                <input id="column-unique" type="checkbox" />
+                Unique
+              </label>
+
+              <label>
+                <input id="column-nullable" type="checkbox" checked />
+                Nullable
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label for="column-default">Default Value</label>
+              <input id="column-default" type="text" />
+            </div>
+
+            <div class="modal-actions">
+              <button
+                type="button"
+                id="cancel-column-modal"
+                class="secondary-button"
+              >
+                Cancel
+              </button>
+
+              <button type="submit" class="save-button">Save Column</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- TABLE MODAL MUST BE OUTSIDE COLUMN MODAL -->
+
+      <div id="table-modal" class="modal hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="table-modal-title">Add Table</h2>
+
+            <button
+              id="close-table-modal"
+              class="modal-close-button"
+              type="button"
+            >
+              ×
+            </button>
+          </div>
+
+          <form id="table-form">
+            <div class="form-group">
+              <label for="table-name">Table Name</label>
+
+              <input id="table-name" type="text" required />
+            </div>
+
+            <div class="modal-actions">
+              <button
+                type="button"
+                id="cancel-table-modal"
+                class="secondary-button"
+              >
+                Cancel
+              </button>
+
+              <button type="submit" class="save-button">Save Table</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
   </body>
 </html>

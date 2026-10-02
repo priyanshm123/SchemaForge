@@ -55,27 +55,57 @@ export function getTablesByProject(projectId) {
 }
 
 export function updateTable(table) {
-
     return new Promise((resolve, reject) => {
-        const db = getDatabase();
+        try {
+            const db = getDatabase();
 
-        const transaction = db.transaction(
-            ["tables"],
-            "readwrite"
-        );
+            const transaction = db.transaction(
+                ["tables"],
+                "readwrite"
+            );
 
-        const store = 
-            transaction.objectStore("tables");
+            const store = transaction.objectStore("tables");
 
-        const request = store.put(table);
+            console.log("Updating table:", table);
 
-        request.onsuccess = () => {
-            resolve(table);
-        };
+            const request = store.put(table);
 
-        request.onerror = () => {
-            reject(request.error);
-        };
+            request.onsuccess = () => {
+                console.log("Table updated:", request.result);
+                resolve(table);
+            };
+
+            request.onerror = () => {
+                console.error(
+                    "Failed to update table:",
+                    request.error
+                );
+
+                reject(request.error);
+            };
+
+            transaction.onerror = () => {
+                console.error(
+                    "Table transaction failed:",
+                    transaction.error
+                );
+
+                reject(transaction.error);
+            };
+
+            transaction.onabort = () => {
+                console.error(
+                    "Table transaction aborted:",
+                    transaction.error
+                );
+
+                reject(transaction.error);
+            };
+
+        } catch (error) {
+            console.error("updateTable crashed:", error);
+            reject(error);
+        }
     });
 }
 

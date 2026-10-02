@@ -1,113 +1,105 @@
 import { getProjectById } from "../services/projectService.js";
-import { createTable, getTablesByProject, updateTable, deleteTable } from "../services/tableService.js";
+
+import {
+  createTable,
+  getTablesByProject,
+  updateTable,
+  deleteTable,
+} from "../services/tableService.js";
+
 import { Table } from "../models/Table.js";
+
 import { Column } from "../models/Column.js";
-import { createColumn, getColumnByTable, updateColumn, deleteColumn } from "../services/columnService.js";
+
+import {
+  createColumn,
+  getColumnByTable,
+  updateColumn,
+  deleteColumn,
+} from "../services/columnService.js";
 
 let currentColumnTableId = null;
 let editingColumnId = null;
+let editingTableId = null;
 
 export async function initializeSchemaCanvas() {
+  const projectId = localStorage.getItem("schemaforge.currentProject");
 
-    const projectId = 
-        localStorage.getItem(
-            "schemaforge.currentProject"
-        );
+  if (!projectId) {
+    showDesignerMessage("No project selected.");
+    return;
+  }
 
-    if (!projectId) {
+  try {
+    const project = await getProjectById(projectId);
 
-        showDesignerMessage(
-            "No project selected."
-        );
-
-        return;
+    if (!project) {
+      showDesignerMessage("The selected project no longer exists.");
+      return;
     }
 
-    try {
+    renderProjectHeader(project);
 
-        const project = await getProjectById(projectId);
+    const addTableButton = document.getElementById("add-table-button");
 
-        if (!project) {
+    addTableButton.addEventListener("click", () => {
+      openTableModal(project.id);
+    });
 
-            showDesignerMessage(
-                "The selected project no longer exists."
-            );
+    document
+      .getElementById("close-column-modal")
+      .addEventListener("click", closeColumnModal);
 
-            return;
-        }
+    document
+      .getElementById("cancel-column-modal")
+      .addEventListener("click", closeColumnModal);
 
-        renderProjectHeader(project);
+    document
+      .getElementById("column-form")
+      .addEventListener("submit", handleColumnFormSubmit);
 
-        const addTableButton = document.getElementById("add-table-button");
+    document
+      .getElementById("close-table-modal")
+      .addEventListener("click", closeTableModal);
 
-        addTableButton.addEventListener("click", () => {
-            handleAddTable(project.id);
-        });
+    document
+      .getElementById("cancel-table-modal")
+      .addEventListener("click", closeTableModal);
 
-        document
-            .getElementById("close-column-modal")
-            .addEventListener("click", closeColumnModal);
+    document
+      .getElementById("table-form")
+      .addEventListener("submit", handleTableFormSubmit);
 
-        document
-            .getElementById("cancel-column-modal")
-            .addEventListener("click", closeColumnModal);
+    await loadTables(project.id);
+  } catch (error) {
+    console.error("Failed to load project:", error);
 
-        document
-            .getElementById("column-form")
-            .addEventListener("submit", handleColumnFormSubmit);
-
-        await loadTables(project.id);
-
-    } catch (error) {
-        
-        console.error(
-            "Failed to load project:",
-            error 
-        );
-
-        showDesignerMessage(
-            "Failed to load the projects."
-        );
-    }  
+    showDesignerMessage("Failed to load the project.");
+  }
 }
 
 function renderProjectHeader(project) {
+  const projectTitle = document.getElementById("project-title");
 
-    const projectTitle =
-        document.getElementById(
-            "project-title"
-        );
+  const projectDescription = document.getElementById("project-description");
 
-    const projectDescription =
-        document.getElementById(
-            "project-description"
-        );
+  if (projectTitle) {
+    projectTitle.textContent = project.name;
+  }
 
-
-    if (projectTitle) {
-        projectTitle.textContent =
-            project.name;
-    }
-
-
-    if (projectDescription) {
-        projectDescription.textContent =
-            project.description;
-    }
+  if (projectDescription) {
+    projectDescription.textContent = project.description;
+  }
 }
 
 function showDesignerMessage(message) {
+  const canvas = document.getElementById("schema-canvas");
 
-    const canvas =
-        document.getElementById(
-            "schema-canvas"
-        );
+  if (!canvas) {
+    return;
+  }
 
-    if (!canvas) {
-        return;
-    }
-
-    canvas.innerHTML = `
+  canvas.innerHTML = `
         <div class="canvas-placeholder">
             <h2>${message}</h2>
         </div>
@@ -115,86 +107,114 @@ function showDesignerMessage(message) {
 }
 
 async function loadTables(projectId) {
-    const tables = await getTablesByProject(projectId);
+  const tables = await getTablesByProject(projectId);
 
-    renderTables(tables);
+  await renderTables(tables);
 }
 
-async  function renderTables(tables) {
-    const canvas = document.getElementById("schema-canvas");
+async function renderTables(tables) {
+  const canvas = document.getElementById("schema-canvas");
 
-    canvas.innerHTML = "";
+  canvas.innerHTML = "";
 
-    if (tables.length === 0) {
-        showDesignerMessage("No tables yet. Add your first table.");
-        return;
-    }
+  if (tables.length === 0) {
+    showDesignerMessage("No tables yet. Add your first table.");
+    return;
+  }
 
-    for (const table of tables) {
+  for (const table of tables) {
+    const columns = await getColumnByTable(table.id);
 
-        const columns = await getColumnByTable(table.id);
-        const tableElement = document.createElement("div");
+    const tableElement = document.createElement("div");
 
-        tableElement.classList.add("schema-table");
+    tableElement.classList.add("schema-table");
 
-        tableElement.style.left = `${table.position.x}px`;
-        tableElement.style.top = `${table.position.y}px`;
+    tableElement.style.left = `${table.position.x}px`;
 
-        let columnsHTML = "";
+    tableElement.style.top = `${table.position.y}px`;
 
-        if (columns.length === 0) {
+    let columnsHTML = "";
 
-            columnsHTML = `
+    if (columns.length === 0) {
+      columnsHTML = `
                 <p class="no-columns">
                     No columns yet
                 </p>
 
-                <button class="add-column-button">
+                <button
+                    type="button"
+                    class="add-column-button"
+                    data-action="add-column"
+                >
                     + Add Column
                 </button>
             `;
-        } else {
-            columnsHTML = columns.map((column) => `
-                <div class="schema-column">
-                    <div class="column-info">
-                        <span class="column-name">
-                            ${column.name}
-                        </span>
+    } else {
+      columnsHTML = columns
+        .map(
+          (column) => `
+                        <div class="schema-column">
+                            <div class="column-info">
+                                <span class="column-name">
+                                    ${column.name}
+                                </span>
 
-                        <span class="column-type">
-                            ${column.dataType}
-                        </span>
-                    </div>
+                                <span class="column-type">
+                                    ${column.dataType}
+                                </span>
+                            </div>
 
-                    <div class="column-actions">
-                        <button class="edit-column-button">
-                            ✎
-                        </button>
+                            <div class="column-actions">
+                                <button
+                                    type="button"
+                                    class="edit-column-button"
+                                    data-action="edit-column"
+                                >
+                                    ✎
+                                </button>
 
-                        <button class="delete-column-button">
-                            ×
-                        </button>
-                    </div>
-                </div>
-            `).join("");
+                                <button
+                                    type="button"
+                                    class="delete-column-button"
+                                    data-action="delete-column"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        </div>
+                    `,
+        )
+        .join("");
 
-            columnsHTML += `
-                <button class="add-column-button">
+      columnsHTML += `
+                <button
+                    type="button"
+                    class="add-column-button"
+                    data-action="add-column"
+                >
                     + Add Column
                 </button>
-            `
-        }
+            `;
+    }
 
-        tableElement.innerHTML = `
+    tableElement.innerHTML = `
             <div class="schema-table-header">
                 <span>${table.name}</span>
 
                 <div class="table-actions">
-                    <button class="edit-table-button">
+                    <button
+                        type="button"
+                        class="edit-table-button"
+                        data-action="edit-table"
+                    >
                         ✎
                     </button>
 
-                    <button class="delete-table-button">
+                    <button
+                        type="button"
+                        class="delete-table-button"
+                        data-action="delete-table"
+                    >
                         ×
                     </button>
                 </div>
@@ -205,306 +225,464 @@ async  function renderTables(tables) {
             </div>
         `;
 
-        const columnElements =
-            tableElement.querySelectorAll(".schema-column");
+    const columnElements = tableElement.querySelectorAll(".schema-column");
 
-        columnElements.forEach((columnElement, index) => {
+    columnElements.forEach((columnElement, index) => {
+      const column = columns[index];
 
-            const column = columns[index];
+      const editColumnButton = columnElement.querySelector(
+        ".edit-column-button"
+      );
 
-            const editButton =
-                columnElement.querySelector(".edit-column-button");
+      editColumnButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
 
-            editButton.addEventListener("click", () => {
-                handleEditColumn(column, columnElement);
-            });
+        handleEditColumn(column, columnElement);
+      });
 
-            const deleteButton =
-                columnElement.querySelector(".delete-column-button");
+      const deleteColumnButton = columnElement.querySelector(
+        ".delete-column-button",
+      );
 
-            deleteButton.addEventListener("click", () => {
-                handleDeleteColumn(column.id, table.id);
-            });
-        });
+      deleteColumnButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
 
-        const editButton =
-            tableElement.querySelector(".edit-table-button");
+        handleDeleteColumn(column.id);
+      });
+    });
 
-        editButton.addEventListener("click", () => {
-            handleEditTable(table);
-        });
-
-        const deleteButton = 
-            tableElement.querySelector(".delete-table-button");
-        
-        deleteButton.addEventListener("click", () => {
-            handleDeleteTable(table.id);
-        });
-
-        const addColumnButton =
-            tableElement.querySelector(".add-column-button");
-
-        addColumnButton.addEventListener("click", () => {
-            handleAddColumn(table.id);
-        });
-
-        canvas.appendChild(tableElement);
-    };
-}
-
-async function handleAddTable(projectId) {
-    const name = prompt("Enter table name:");
-
-    if (!name || !name.trim()) {
-        return;
-    }
-
-    const tables = await getTablesByProject(projectId);
-
-    const table = new Table(projectId, name.trim());
-
-    table.position = {
-        x: 50 + (tables.length % 4) * 250,
-        y: 50 + Math.floor(tables.length / 4) * 180
-    };
-
-    await createTable(table);
-
-    await loadTables(projectId);
-}
-
-async function handleDeleteTable(tableId) {
-    const confirmed = confirm(
-        "Are you sure you want to delete this table?"
+    const editTableButton = tableElement.querySelector(
+      ".edit-table-button",
     );
 
-    if (!confirmed) {
-        return;
-    }
+    editTableButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
 
-    await deleteTable(tableId);
+      openTableModal(table.projectId, table, tableElement);
+    });
 
-    const projectId =
-        localStorage.getItem("schemaforge.currentProject");
-
-    await loadTables(projectId);
-}
-
-async function handleEditTable(table) {
-
-    const newName = prompt(
-        "Enter new table name:",
-        table.name
+    const deleteTableButton = tableElement.querySelector(
+      ".delete-table-button"
     );
 
-    if (!newName || !newName.trim()) {
-        return;
-    }
+    deleteTableButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
 
-    table.name = newName.trim();
+      handleDeleteTable(table.id);
+    });
 
-    await updateTable(table);
-
-    await loadTables(table.projectId);
-}
-
-async function handleAddColumn(tableId) {
-   openColumnModal(tableId);
-}
-
-async function handleEditColumn(column, columnElement) {
-   openColumnModal(column.tableId, column, columnElement);
-}
-
-async function handleDeleteColumn(columnId, tableId) {
-    const confirmed = confirm(
-        "Are you sure you want to delete this column?"
+    const addColumnButton = tableElement.querySelector(
+      ".add-column-button"
     );
 
-    if (!confirmed) {
-        return;
-    }
+    addColumnButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
 
-    await deleteColumn(columnId);
+      handleAddColumn(table.id);
+    });
 
-    const projectId =
-        localStorage.getItem("schemaforge.currentProject");
-
-    await loadTables(projectId);
+    canvas.appendChild(tableElement);
+  }
 }
 
-function openColumnModal(tableId, column = null, anchorElement = null) {
-    const modal = document.getElementById("column-modal");
-    const title = document.getElementById("column-modal-title");
+function openTableModal(
+    projectId,
+    table = null,
+    anchorElement = null
+) {
+    const modal =
+        document.getElementById("table-modal");
 
-    const nameInput = document.getElementById("column-name");
-    const dataTypeInput = document.getElementById("column-data-type");
-    const primaryKeyInput = document.getElementById("column-primary-key");
-    const uniqueInput = document.getElementById("column-unique");
-    const nullableInput = document.getElementById("column-nullable");
-    const defaultInput = document.getElementById("column-default");
+    const title =
+        document.getElementById(
+            "table-modal-title"
+        );
 
-    currentColumnTableId = tableId;
+    const nameInput =
+        document.getElementById("table-name");
 
-    if (column) {
-        editingColumnId = column.id;
+    const editor =
+        modal.querySelector(".modal-content");
 
-        title.textContent = "Edit Column";
+    if (table) {
+        editingTableId = table.id;
 
-        nameInput.value = column.name;
-        dataTypeInput.value = column.dataType;
-        primaryKeyInput.checked = column.primaryKey;
-        uniqueInput.checked = column.unique;
-        nullableInput.checked = column.nullable;
-        defaultInput.value = column.defaultValue ?? "";
+        title.textContent = "Edit Table";
+        nameInput.value = table.name;
+
+        editor.classList.remove("table-create-editor");
+        editor.classList.add("table-edit-editor");
+
+        modal.classList.remove("hidden");
+
+        if (anchorElement) {
+            positionTableEditor(anchorElement);
+        }
     } else {
-        editingColumnId = null;
+        editingTableId = null;
 
-        title.textContent = "Add Column";
-
+        title.textContent = "Add Table";
         nameInput.value = "";
-        dataTypeInput.value = "VARCHAR";
-        primaryKeyInput.checked = false;
-        uniqueInput.checked = false;
-        nullableInput.checked = true;
-        defaultInput.value = "";
-    }
 
-    modal.classList.remove("hidden");
+        editor.classList.remove("table-edit-editor");
+        editor.classList.add("table-create-editor");
 
-    if (anchorElement) {
-    positionColumnEditor(anchorElement);
+        editor.style.left = "50%";
+        editor.style.top = "50%";
+        editor.style.right = "auto";
+        editor.style.transform =
+            "translate(-50%, -50%)";
+
+        modal.classList.remove("hidden");
     }
 
     nameInput.focus();
 }
 
-function positionColumnEditor(anchorElement) {
-    const modal = document.getElementById("column-modal");
+function positionTableEditor(anchorElement) {
+  const modal = document.getElementById("table-modal");
+
+  const editor = modal.querySelector(".modal-content");
+
+  const rect = anchorElement.getBoundingClientRect();
+
+  const gap = 12;
+
+  let left = rect.right + gap;
+
+  let top = rect.top;
+
+  const editorWidth = editor.offsetWidth;
+
+  const editorHeight = editor.offsetHeight;
+
+  const viewportWidth = window.innerWidth;
+
+  const viewportHeight = window.innerHeight;
+
+  if (left + editorWidth > viewportWidth - 16) {
+    left = rect.left - editorWidth - gap;
+  }
+
+  if (top + editorHeight > viewportHeight - 16) {
+    top = viewportHeight - editorHeight - 16;
+  }
+
+  if (top < 16) {
+    top = 16;
+  }
+
+  editor.style.left = `${left}px`;
+
+  editor.style.top = `${top}px`;
+
+  editor.style.right = "auto";
+
+  editor.style.transform = "none";
+}
+
+async function handleTableFormSubmit(event) {
+  event.preventDefault();
+
+  const nameInput = document.getElementById("table-name");
+
+  const name = nameInput.value.trim();
+
+  if (!name) {
+    return;
+  }
+
+  try {
+    const projectId = localStorage.getItem("schemaforge.currentProject");
+
+    if (editingTableId) {
+      const tables = await getTablesByProject(projectId);
+
+      const table = tables.find((table) => table.id === editingTableId);
+
+      if (!table) {
+        return;
+      }
+
+      table.name = name;
+      table.updatedAt = Date.now();
+
+      await updateTable(table);
+
+    } else {
+      const tables = await getTablesByProject(projectId);
+
+      const table = new Table(projectId, name);
+
+      table.position = {
+        x: 50 + (tables.length % 4) * 250,
+
+        y: 50 + Math.floor(tables.length / 4) * 180,
+      };
+
+      await createTable(table);
+    }
+
+    closeTableModal();
+
+    await loadTables(projectId);
+  } catch (error) {
+    console.error("Failed to save table:", error);
+  }
+}
+
+function closeTableModal() {
+  const modal = document.getElementById("table-modal");
+
+  modal.classList.add("hidden");
+
+  editingTableId = null;
+}
+
+async function handleDeleteTable(tableId) {
+  const confirmed = confirm("Are you sure you want to delete this table?");
+
+  if (!confirmed) {
+    return;
+  }
+
+  await deleteTable(tableId);
+
+  const projectId = localStorage.getItem("schemaforge.currentProject");
+
+  await loadTables(projectId);
+}
+
+function handleAddColumn(tableId) {
+  openColumnModal(tableId);
+}
+
+function handleEditColumn(column, columnElement) {
+  openColumnModal(column.tableId, column, columnElement);
+}
+
+async function handleDeleteColumn(columnId) {
+  const confirmed = confirm("Are you sure you want to delete this column?");
+
+  if (!confirmed) {
+    return;
+  }
+
+  await deleteColumn(columnId);
+
+  const projectId = localStorage.getItem("schemaforge.currentProject");
+
+  await loadTables(projectId);
+}
+
+function openColumnModal(tableId, column = null, anchorElement = null) {
+  const modal = document.getElementById("column-modal");
+
+  const tableModal = document.getElementById("table-modal");
+
+  const title = document.getElementById("column-modal-title");
+
+  const nameInput = document.getElementById("column-name");
+
+  const dataTypeInput = document.getElementById("column-data-type");
+
+  const primaryKeyInput = document.getElementById("column-primary-key");
+
+  const uniqueInput = document.getElementById("column-unique");
+
+  const nullableInput = document.getElementById("column-nullable");
+
+  const defaultInput = document.getElementById("column-default");
+
+  tableModal.classList.add("hidden");
+
+  editingTableId = null;
+
+  currentColumnTableId = tableId;
+
+  if (column) {
+    editingColumnId = column.id;
+
+    title.textContent = "Edit Column";
+
+    nameInput.value = column.name;
+
+    dataTypeInput.value = column.dataType;
+
+    primaryKeyInput.checked = column.primaryKey;
+
+    uniqueInput.checked = column.unique;
+
+    nullableInput.checked = column.nullable;
+
+    defaultInput.value = column.defaultValue ?? "";
+  } else {
+    editingColumnId = null;
+
+    title.textContent = "Add Column";
+
+    nameInput.value = "";
+
+    dataTypeInput.value = "VARCHAR";
+
+    primaryKeyInput.checked = false;
+
+    uniqueInput.checked = false;
+
+    nullableInput.checked = true;
+
+    defaultInput.value = "";
+  }
+
+  modal.classList.remove("hidden");
+
+  if (anchorElement) {
+    positionColumnEditor(anchorElement);
+  } else {
     const editor = modal.querySelector(".modal-content");
 
-    const rect = anchorElement.getBoundingClientRect();
-
-    const gap = 12;
-
-    let left = rect.right + gap;
-    let top = rect.top;
-
-    const editorWidth = editor.offsetWidth;
-    const editorHeight = editor.offsetHeight;
-
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    if (left + editorWidth > viewportWidth - 16) {
-        left = rect.left - editorWidth - gap;
-    }
-
-    if (top + editorHeight > viewportHeight - 16) {
-        top = viewportHeight - editorHeight - 16;
-    }
-
-    if (top < 16) {
-        top = 16;
-    }
-
-    editor.style.left = `${left}px`;
-    editor.style.top = `${top}px`;
+    editor.style.left = "50%";
+    editor.style.top = "50%";
     editor.style.right = "auto";
+
+    editor.style.transform = "translate(-50%, -50%)";
+  }
+
+  nameInput.focus();
+}
+
+function positionColumnEditor(anchorElement) {
+  const modal = document.getElementById("column-modal");
+
+  const editor = modal.querySelector(".modal-content");
+
+  const rect = anchorElement.getBoundingClientRect();
+
+  const gap = 12;
+
+  let left = rect.right + gap;
+
+  let top = rect.top;
+
+  const editorWidth = editor.offsetWidth;
+
+  const editorHeight = editor.offsetHeight;
+
+  const viewportWidth = window.innerWidth;
+
+  const viewportHeight = window.innerHeight;
+
+  if (left + editorWidth > viewportWidth - 16) {
+    left = rect.left - editorWidth - gap;
+  }
+
+  if (top + editorHeight > viewportHeight - 16) {
+    top = viewportHeight - editorHeight - 16;
+  }
+
+  if (top < 16) {
+    top = 16;
+  }
+
+  editor.style.left = `${left}px`;
+
+  editor.style.top = `${top}px`;
+
+  editor.style.right = "auto";
+
+  editor.style.transform = "none";
 }
 
 function closeColumnModal() {
-    const modal = document.getElementById("column-modal");
+  const modal = document.getElementById("column-modal");
 
-    modal.classList.add("hidden");
+  modal.classList.add("hidden");
 
-    currentColumnTableId = null;
-    editingColumnId = null;
+  currentColumnTableId = null;
+
+  editingColumnId = null;
 }
 
 async function handleColumnFormSubmit(event) {
-    event.preventDefault();
+  event.preventDefault();
 
-    const name = document
-        .getElementById("column-name")
-        .value
-        .trim();
+  const name = document.getElementById("column-name").value.trim();
 
-    const dataType =
-        document.getElementById("column-data-type").value;
+  const dataType = document.getElementById("column-data-type").value;
 
-    const primaryKey =
-        document.getElementById("column-primary-key").checked;
+  const primaryKey = document.getElementById("column-primary-key").checked;
 
-    const unique =
-        document.getElementById("column-unique").checked;
+  const unique = document.getElementById("column-unique").checked;
 
-    const nullable =
-        document.getElementById("column-nullable").checked;
+  const nullable = document.getElementById("column-nullable").checked;
 
-    const defaultValue =
-        document.getElementById("column-default").value.trim();
+  const defaultValue = document.getElementById("column-default").value.trim();
 
-    if (!name) {
-        return;
-    }
+  if (!name) {
+    return;
+  }
 
-    try {
-        if (editingColumnId) {
+  try {
+    const columns = await getColumnByTable(currentColumnTableId);
 
-            const columns =
-                await getColumnByTable(currentColumnTableId);
-
-            const column =
-                columns.find(
-                    (column) =>
-                        column.id === editingColumnId
-                );
-
-            if (!column) {
-                return;
-            }
-
-            column.name = name;
-            column.dataType = dataType;
-            column.primaryKey = primaryKey;
-            column.unique = unique;
-            column.nullable = nullable;
-            column.defaultValue =
-                defaultValue || null;
-
-            await updateColumn(column);
-
-        } else {
-
-            const column = new Column(
-                currentColumnTableId,
-                name,
-                dataType
-            );
-
-            column.primaryKey = primaryKey;
-            column.unique = unique;
-            column.nullable = nullable;
-            column.defaultValue =
-                defaultValue || null;
-
-            await createColumn(column);
-        }
-
-        closeColumnModal();
-
-        const projectId =
-            localStorage.getItem(
-                "schemaforge.currentProject"
-            );
-
-        await loadTables(projectId);
-
-    } catch (error) {
-        console.error(
-            "Failed to save column:",
-            error
+    if (primaryKey) {
+        const existingPrimaryKey = columns.find(
+            (column) =>
+                column.primaryKey &&
+                column.id !== editingColumnId
         );
+
+        if (existingPrimaryKey) {
+            alert("This table already has a primary key.");
+            return;
+        }
     }
+
+    if (editingColumnId) {
+      const columns = await getColumnByTable(currentColumnTableId);
+
+      const column = columns.find((column) => column.id === editingColumnId);
+
+      if (!column) {
+        return;
+      }
+
+      column.name = name;
+
+      column.dataType = dataType;
+
+      column.primaryKey = primaryKey;
+      column.unique = primaryKey ? true : unique;
+      column.nullable = primaryKey ? false : nullable;
+
+      column.defaultValue = defaultValue || null;
+
+      await updateColumn(column);
+    } else {
+      const column = new Column(currentColumnTableId, name, dataType);
+
+      column.primaryKey = primaryKey;
+
+      column.unique = unique;
+
+      column.nullable = nullable;
+
+      column.defaultValue = defaultValue || null;
+
+      await createColumn(column);
+    }
+
+    closeColumnModal();
+
+    const projectId = localStorage.getItem("schemaforge.currentProject");
+
+    await loadTables(projectId);
+  } catch (error) {
+    console.error("Failed to save column:", error);
+  }
 }
