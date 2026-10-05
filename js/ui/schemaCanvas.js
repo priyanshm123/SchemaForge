@@ -70,6 +70,22 @@ export async function initializeSchemaCanvas() {
       .getElementById("table-form")
       .addEventListener("submit", handleTableFormSubmit);
 
+    const foreignKeyCheckbox =
+    document.getElementById("column-foreign-key");
+
+    const foreignKeyFields =
+      document.getElementById("foreign-key-fields");
+
+    foreignKeyCheckbox.addEventListener(
+        "change",
+        () => {
+            foreignKeyFields.classList.toggle(
+                "hidden",
+                !foreignKeyCheckbox.checked
+            );
+        }
+    );
+
     await loadTables(project.id);
   } catch (error) {
     console.error("Failed to load project:", error);
