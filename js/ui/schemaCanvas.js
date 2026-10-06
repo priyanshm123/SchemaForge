@@ -70,21 +70,19 @@ export async function initializeSchemaCanvas() {
       .getElementById("table-form")
       .addEventListener("submit", handleTableFormSubmit);
 
-    const foreignKeyCheckbox =
-    document.getElementById("column-foreign-key");
+    const foreignKeyCheckbox = document.getElementById("column-foreign-key");
 
-    const foreignKeyFields =
-      document.getElementById("foreign-key-fields");
+    const foreignKeyFields = document.getElementById("foreign-key-fields");
 
-    foreignKeyCheckbox.addEventListener(
-        "change",
-        () => {
-            foreignKeyFields.classList.toggle(
-                "hidden",
-                !foreignKeyCheckbox.checked
-            );
-        }
-    );
+    foreignKeyCheckbox.addEventListener("change", () => {
+      foreignKeyFields.classList.toggle("hidden", !foreignKeyCheckbox.checked);
+    });
+
+    const foreignKeyTable = document.getElementById("foreign-key-table");
+
+    foreignKeyTable.addEventListener("change", async () => {
+      await loadForeignKeyColumns(foreignKeyTable.value);
+    });
 
     await loadTables(project.id);
   } catch (error) {
@@ -247,7 +245,7 @@ async function renderTables(tables) {
       const column = columns[index];
 
       const editColumnButton = columnElement.querySelector(
-        ".edit-column-button"
+        ".edit-column-button",
       );
 
       editColumnButton.addEventListener("click", (event) => {
@@ -269,9 +267,7 @@ async function renderTables(tables) {
       });
     });
 
-    const editTableButton = tableElement.querySelector(
-      ".edit-table-button",
-    );
+    const editTableButton = tableElement.querySelector(".edit-table-button");
 
     editTableButton.addEventListener("click", (event) => {
       event.preventDefault();
@@ -281,7 +277,7 @@ async function renderTables(tables) {
     });
 
     const deleteTableButton = tableElement.querySelector(
-      ".delete-table-button"
+      ".delete-table-button",
     );
 
     deleteTableButton.addEventListener("click", (event) => {
@@ -291,9 +287,7 @@ async function renderTables(tables) {
       handleDeleteTable(table.id);
     });
 
-    const addColumnButton = tableElement.querySelector(
-      ".add-column-button"
-    );
+    const addColumnButton = tableElement.querySelector(".add-column-button");
 
     addColumnButton.addEventListener("click", (event) => {
       event.preventDefault();
@@ -306,58 +300,47 @@ async function renderTables(tables) {
   }
 }
 
-function openTableModal(
-    projectId,
-    table = null,
-    anchorElement = null
-) {
-    const modal =
-        document.getElementById("table-modal");
+function openTableModal(projectId, table = null, anchorElement = null) {
+  const modal = document.getElementById("table-modal");
 
-    const title =
-        document.getElementById(
-            "table-modal-title"
-        );
+  const title = document.getElementById("table-modal-title");
 
-    const nameInput =
-        document.getElementById("table-name");
+  const nameInput = document.getElementById("table-name");
 
-    const editor =
-        modal.querySelector(".modal-content");
+  const editor = modal.querySelector(".modal-content");
 
-    if (table) {
-        editingTableId = table.id;
+  if (table) {
+    editingTableId = table.id;
 
-        title.textContent = "Edit Table";
-        nameInput.value = table.name;
+    title.textContent = "Edit Table";
+    nameInput.value = table.name;
 
-        editor.classList.remove("table-create-editor");
-        editor.classList.add("table-edit-editor");
+    editor.classList.remove("table-create-editor");
+    editor.classList.add("table-edit-editor");
 
-        modal.classList.remove("hidden");
+    modal.classList.remove("hidden");
 
-        if (anchorElement) {
-            positionTableEditor(anchorElement);
-        }
-    } else {
-        editingTableId = null;
-
-        title.textContent = "Add Table";
-        nameInput.value = "";
-
-        editor.classList.remove("table-edit-editor");
-        editor.classList.add("table-create-editor");
-
-        editor.style.left = "50%";
-        editor.style.top = "50%";
-        editor.style.right = "auto";
-        editor.style.transform =
-            "translate(-50%, -50%)";
-
-        modal.classList.remove("hidden");
+    if (anchorElement) {
+      positionTableEditor(anchorElement);
     }
+  } else {
+    editingTableId = null;
 
-    nameInput.focus();
+    title.textContent = "Add Table";
+    nameInput.value = "";
+
+    editor.classList.remove("table-edit-editor");
+    editor.classList.add("table-create-editor");
+
+    editor.style.left = "50%";
+    editor.style.top = "50%";
+    editor.style.right = "auto";
+    editor.style.transform = "translate(-50%, -50%)";
+
+    modal.classList.remove("hidden");
+  }
+
+  nameInput.focus();
 }
 
 function positionTableEditor(anchorElement) {
@@ -429,7 +412,6 @@ async function handleTableFormSubmit(event) {
       table.updatedAt = Date.now();
 
       await updateTable(table);
-
     } else {
       const tables = await getTablesByProject(projectId);
 
@@ -496,12 +478,25 @@ async function handleDeleteColumn(columnId) {
   await loadTables(projectId);
 }
 
-function openColumnModal(tableId, column = null, anchorElement = null) {
+async function openColumnModal(tableId, column = null, anchorElement = null) {
   const modal = document.getElementById("column-modal");
+
+  const editor = modal.querySelector(".modal-content");
+
+  editor.classList.add("column-editor");
 
   const tableModal = document.getElementById("table-modal");
 
   const title = document.getElementById("column-modal-title");
+
+  const foreignKeyCheckbox = document.getElementById("column-foreign-key");
+
+  const foreignKeyFields = document.getElementById("foreign-key-fields");
+
+  foreignKeyCheckbox.checked = false;
+  foreignKeyFields.classList.add("hidden");
+
+  await loadForeignKeyTables();
 
   const nameInput = document.getElementById("column-name");
 
@@ -597,14 +592,12 @@ function positionColumnEditor(anchorElement) {
     left = rect.left - editorWidth - gap;
   }
 
-  if (top + editorHeight > viewportHeight - 16) {
-    top = viewportHeight - editorHeight - 16;
-  }
+  const maxTop = viewportHeight - editor.offsetHeight - 16;
 
-  if (top < 16) {
-    top = 16;
+  if (top > maxTop) {
+    top = Math.max(16, maxTop);
   }
-
+  
   editor.style.left = `${left}px`;
 
   editor.style.top = `${top}px`;
@@ -647,16 +640,14 @@ async function handleColumnFormSubmit(event) {
     const columns = await getColumnByTable(currentColumnTableId);
 
     if (primaryKey) {
-        const existingPrimaryKey = columns.find(
-            (column) =>
-                column.primaryKey &&
-                column.id !== editingColumnId
-        );
+      const existingPrimaryKey = columns.find(
+        (column) => column.primaryKey && column.id !== editingColumnId,
+      );
 
-        if (existingPrimaryKey) {
-            alert("This table already has a primary key.");
-            return;
-        }
+      if (existingPrimaryKey) {
+        alert("This table already has a primary key.");
+        return;
+      }
     }
 
     if (editingColumnId) {
@@ -701,4 +692,44 @@ async function handleColumnFormSubmit(event) {
   } catch (error) {
     console.error("Failed to save column:", error);
   }
+}
+
+async function loadForeignKeyTables() {
+  const projectId = localStorage.getItem("schemaforge.currentProject");
+
+  const tables = await getTablesByProject(projectId);
+
+  const tableSelect = document.getElementById("foreign-key-table");
+
+  tableSelect.innerHTML = '<option value="">Select table</>';
+
+  tables.forEach((table) => {
+    const option = document.createElement("option");
+
+    option.value = table.id;
+    option.textContent = table.name;
+
+    tableSelect.appendChild(option);
+  });
+}
+
+async function loadForeignKeyColumns(tableId) {
+  const columnSelect = document.getElementById("foreign-key-column");
+
+  columnSelect.innerHTML = '<option value="">Select column</option>';
+
+  if (!tableId) {
+    return;
+  }
+
+  const columns = await getColumnByTable(tableId);
+
+  columns.forEach((column) => {
+    const option = document.createElement("option");
+
+    option.value = column.id;
+    option.textContent = `${column.name} (${column.dataType})`;
+
+    columnSelect.appendChild(option);
+  });
 }
